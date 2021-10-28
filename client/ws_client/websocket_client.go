@@ -16,13 +16,13 @@ import (
 var (
 	//wsServerAddr string = "ws://127.0.0.1:8080/echo"
 	LocalServerAddr = "http://127.0.0.1:"
-	WsCon *websocket.Conn
-	ConSucess bool = false
+	WsCon           *websocket.Conn
+	ConSucess       bool = false
 )
 
 const (
 	SUCCESS = "链接成功"
-	FAIL = "链接失败"
+	FAIL    = "链接失败"
 )
 
 func WsDailCall() {
@@ -30,16 +30,16 @@ func WsDailCall() {
 	fmt.Println(data.SettingData)
 	var err error
 	var header http.Header = make(map[string][]string)
-	header.Add("origin",data.SettingData.ServerAddr)
+	header.Add("origin", data.SettingData.ServerAddr)
 
 	if data.SettingData.WsId == "" {
-		fmt.Println("卧槽尼玛：",data.SettingData.WsId)
+		fmt.Println("卧槽尼玛：", data.SettingData.WsId)
 		nano := time.Now().UnixNano()
-		wsId := strconv.FormatInt(nano, 10)+uuid.NewV4().String()
+		wsId := strconv.FormatInt(nano, 10) + uuid.NewV4().String()
 		wsId = tool.Md5(wsId)
 		data.SettingData.WsId = wsId
 		marshal, _ := json.Marshal(data.SettingData)
-		tool.WriteFile(data.SETTINGFILE,string(marshal))
+		tool.WriteFile(data.SETTINGFILE, string(marshal))
 	}
 
 	wsId := data.SettingData.WsId
@@ -49,10 +49,10 @@ func WsDailCall() {
 	}
 
 	//请求头这里带上id
-	header.Add("ws_id",wsId)
+	header.Add("ws_id", wsId)
 
 	//Label:
-	for  {
+	for {
 		if ConSucess {
 			break
 		}
@@ -61,8 +61,8 @@ func WsDailCall() {
 		if err != nil || WsCon == nil {
 			fmt.Println(err)
 			ClientForm.WSStatus.SetCaption(FAIL)
-			rlog.Log.Println("dial:",err)
-		}else {
+			rlog.Log.Println("dial:", err)
+		} else {
 			ClientForm.WSStatus.SetCaption(SUCCESS)
 			ConSucess = true
 			go func() {
@@ -75,10 +75,10 @@ func WsDailCall() {
 }
 
 func HandleWsMsg() {
-	for  {
+	for {
 		_, message, e := WsCon.ReadMessage()
-		fmt.Println("收到消息:",string(message))
-		if e != nil  {
+		fmt.Println("收到消息:", string(message))
+		if e != nil {
 			fmt.Println("出错了")
 			rlog.Log.Println(e)
 			time.Sleep(time.Second * 2)
@@ -95,7 +95,7 @@ func HandleWsMsg() {
 			rlog.Log.Println(e)
 			requestData.Status = -3
 			marshal, _ := json.Marshal(requestData)
-			WsCon.WriteMessage(websocket.TextMessage,marshal)
+			WsCon.WriteMessage(websocket.TextMessage, marshal)
 			continue
 		}
 
@@ -107,15 +107,16 @@ func HandleWsMsg() {
 		var requestStatus bool
 		switch method {
 		case "GET":
-			requestStatus, result = tool.GetRequest(LocalServerAddr+data.SettingData.ServicePort+requestData.Path,requestData.Header)
+			requestStatus, result = tool.GetRequest(LocalServerAddr+data.SettingData.ServicePort+requestData.Path, requestData.Header)
 		case "POST":
-			requestStatus, result = tool.PostRequest(LocalServerAddr+data.SettingData.ServicePort+requestData.Path,requestData.Header,requestData.Body)
+			requestStatus, result = tool.PostRequest(LocalServerAddr+data.SettingData.ServicePort+requestData.Path, requestData.Header, requestData.Body)
 		}
 		if !requestStatus {
 			responseData.Status = -7
-		}else {
+		} else {
 			responseData.Status = 1
 		}
+		//应该在这里修改GUI
 		responseData.MessageId = requestData.MessageId
 		responseData.Body = string(result)
 		marshal, _ := json.Marshal(responseData)
