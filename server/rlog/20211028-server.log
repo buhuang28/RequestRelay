@@ -1,2 +1,0 @@
-2021/10/28 21:11:07 handle_echo.go:22: upgrade websocket: request origin not allowed by Upgrader.CheckOrigin
-2021/10/28 21:12:34 handle_echo.go:22: upgrade websocket: request origin not allowed by Upgrader.CheckOrigin
