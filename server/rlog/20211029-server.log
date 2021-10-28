@@ -1,0 +1,8 @@
+2021/10/29 00:37:19 handle_echo.go:77: read: read tcp 127.0.0.1:8768->127.0.0.1:57114: wsarecv: An existing connection was forcibly closed by the remote host.
+2021/10/29 00:39:19 handle_echo.go:78: read: read tcp 127.0.0.1:8768->127.0.0.1:57133: wsarecv: An existing connection was forcibly closed by the remote host.
+2021/10/29 00:40:17 handle_echo.go:78: read: read tcp 127.0.0.1:8768->127.0.0.1:57148: wsarecv: An existing connection was forcibly closed by the remote host.
+2021/10/29 00:41:14 handle_echo.go:78: read: read tcp 127.0.0.1:8768->127.0.0.1:57158: wsarecv: An existing connection was forcibly closed by the remote host.
+2021/10/29 00:41:47 handle_echo.go:78: read: read tcp 127.0.0.1:8768->127.0.0.1:57167: wsarecv: An existing connection was forcibly closed by the remote host.
+2021/10/29 00:44:38 handle_echo.go:83: read: read tcp 127.0.0.1:8768->127.0.0.1:57223: wsarecv: An existing connection was forcibly closed by the remote host.
+2021/10/29 00:45:46 handle_echo.go:84: read: read tcp 127.0.0.1:8768->127.0.0.1:57241: wsarecv: An existing connection was forcibly closed by the remote host.
+2021/10/29 00:46:39 handle_echo.go:82: read: read tcp 127.0.0.1:8768->127.0.0.1:57256: wsarecv: An existing connection was forcibly closed by the remote host.
