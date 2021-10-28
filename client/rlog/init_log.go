@@ -14,9 +14,9 @@ var (
 )
 
 func InitLog() {
-	logFileNmae := `./rlog/`+time.Now().Format("20060102")+"-client.rlog"
+	logFileNmae := `./rlog/` + time.Now().Format("20060102") + "-client.log"
 	logFileAllPath := logFileNmae
-	_,err :=os.Stat(logFileAllPath)
+	_, err := os.Stat(logFileAllPath)
 
 	exits := CheckFileIsExits(`rlog`)
 	if !exits {
@@ -24,11 +24,11 @@ func InitLog() {
 	}
 
 	var f *os.File
-	if  err != nil{
-		f, _= os.Create(logFileAllPath)
-	}else{
+	if err != nil {
+		f, _ = os.Create(logFileAllPath)
+	} else {
 		//如果存在文件则 追加log
-		f ,_= os.OpenFile(logFileAllPath,os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
+		f, _ = os.OpenFile(logFileAllPath, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0666)
 	}
 	Log = log.New(f, "", log.LstdFlags)
 	Log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -45,7 +45,7 @@ func CheckFileIsExits(fileName string) bool {
 	return true
 }
 
-func PrintStackTrace(err interface{})  {
+func PrintStackTrace(err interface{}) {
 	buf := new(bytes.Buffer)
 	fmt.Fprintf(buf, "%v\n", err)
 	for i := 1; ; i++ {
