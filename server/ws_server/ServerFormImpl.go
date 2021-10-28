@@ -18,9 +18,7 @@ type TServerFormFields struct {
 }
 
 func (f *TServerForm) OnFormCreate(sender vcl.IObject) {
-
 	f.ScreenCenter()
-
 	readFile := tool.ReadFile(data.SETTINGFILE)
 	if readFile == "" {
 		return
@@ -33,8 +31,8 @@ func (f *TServerForm) OnFormCreate(sender vcl.IObject) {
 
 	if data.SettingData.OutTime == 0 {
 		data.SettingData.OutTime = 6
-	}else {
-		f.OutTime.SetText(strconv.FormatInt(data.SettingData.OutTime,10))
+	} else {
+		f.OutTime.SetText(strconv.FormatInt(data.SettingData.OutTime, 10))
 	}
 
 	if data.SettingData.SecretKey != "" {
@@ -48,7 +46,6 @@ func (f *TServerForm) OnFormCreate(sender vcl.IObject) {
 	if data.SettingData.WSPort != "" {
 		f.WSPort.SetText(data.SettingData.WSPort)
 	}
-
 }
 
 func (f *TServerForm) OnRunButtonClick(sender vcl.IObject) {
@@ -98,7 +95,7 @@ func (f *TServerForm) OnRunButtonClick(sender vcl.IObject) {
 	setting.SecretKey = secretKey
 	setting.WSPort = wsPort
 	marshal, _ := json.Marshal(setting)
-	tool.WriteFile(data.SETTINGFILE,string(marshal))
+	tool.WriteFile(data.SETTINGFILE, string(marshal))
 
 	data.SettingData = setting
 	go func() {
