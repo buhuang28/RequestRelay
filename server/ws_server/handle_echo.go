@@ -93,9 +93,7 @@ func HandleWSMessage(w http.ResponseWriter, r *http.Request) {
 		switch responseData.MessageType {
 		case 0:
 			messageId := responseData.MessageId
-			data.ChanMapLock.Lock()
-			c := data.ChanMap[messageId]
-			data.ChanMapLock.Unlock()
+			c := data.GetResponseDataChan(messageId)
 			c <- responseData
 		case 1:
 			//body := responseData.Body

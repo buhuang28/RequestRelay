@@ -11,11 +11,19 @@ import (
 	"github.com/ying32/govcl/vcl"
 	"strconv"
 	"strings"
+	"sync"
+	"time"
 )
 
 //::private::
 type TServerFormFields struct {
 }
+
+var (
+	MessageId                int64 = 0
+	MessageIdToListViewIndex       = make(map[int64]int32)
+	RequestListViewLock      sync.Mutex
+)
 
 func (f *TServerForm) OnFormCreate(sender vcl.IObject) {
 	f.ScreenCenter()
@@ -99,10 +107,42 @@ func (f *TServerForm) OnRunButtonClick(sender vcl.IObject) {
 
 	data.SettingData = setting
 	go func() {
-		WSStart()
+		WSSRun()
 	}()
 	go func() {
-		WebStart()
+		WebRun()
 	}()
+}
 
+func AddRequestViewItem(messageId int64, relayId, path, method, json string) {
+	item := ServerForm.RequestListView.Items().Add()
+	item.SetCaption("")
+	item.SubItems().Add(relayId)
+	item.SubItems().Add(time.Unix(time.Now().Unix(), 0).Format(timeTemplate))
+	item.SubItems().Add(path)
+	item.SubItems().Add(method)
+	item.SubItems().Add(json)
+	item.SubItems().Add("")
+	item.SubItems().Add("")
+	index := item.Index()
+	RequestListViewLock.Lock()
+	MessageIdToListViewIndex[messageId] = index
+	RequestListViewLock.Unlock()
+}
+
+func ChangeRequestViewItem(messageId int64, response, t string) {
+	RequestListViewLock.Lock()
+	index := MessageIdToListViewIndex[messageId]
+	RequestListViewLock.Unlock()
+	item := ServerForm.RequestListView.Items().Item(index)
+	if response != "" {
+		item.SubItems().SetStrings(5, response)
+	} else {
+		item.SubItems().SetStrings(5, "null")
+	}
+	if t != "" {
+		item.SubItems().SetStrings(6, "超时")
+	} else {
+		item.SubItems().SetStrings(6, t)
+	}
 }

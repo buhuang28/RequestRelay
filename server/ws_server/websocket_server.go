@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func WSStart() {
+func WSSRun() {
 	http.HandleFunc("/echo", HandleWSMessage)
 	fmt.Println("localhost:" + data.SettingData.WSPort)
 	err := http.ListenAndServe(":"+data.SettingData.WSPort, nil)

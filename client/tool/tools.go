@@ -48,7 +48,7 @@ func WriteFile(fileName, content string) bool {
 		f.Close()
 	}()
 	if err != nil {
-		fmt.Println(err.Error())
+		log.Info(err.Error())
 		return false
 	} else {
 		write, e := f.Write([]byte(content))
@@ -66,7 +66,7 @@ func ReadFile(fileName string) string {
 	}
 	f, err := ioutil.ReadFile(fileName)
 	if err != nil {
-		fmt.Println("read fail", err)
+		log.Info("read fail", err)
 		return ""
 	}
 	return string(f)
