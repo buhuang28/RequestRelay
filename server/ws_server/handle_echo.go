@@ -2,26 +2,27 @@ package ws_server
 
 import (
 	"RequestRelayServer/data"
-	"RequestRelayServer/rlog"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 )
 
 var (
 	upgrader = websocket.Upgrader{} // use default options
+	WSRLock  sync.Mutex
+	WSWLock  sync.Mutex
 )
 
-func Echo(w http.ResponseWriter, r *http.Request) {
+func HandleWSMessage(w http.ResponseWriter, r *http.Request) {
 	var e error
 	WsCon, e := upgrader.Upgrade(w, r, nil)
 	if e != nil {
-		rlog.Log.Println("upgrade",e)
-		log.Print("upgrade:", e)
+		log.Info("upgrade", e)
 		return
 	}
 	if r.Header == nil {
@@ -57,13 +58,12 @@ func Echo(w http.ResponseWriter, r *http.Request) {
 	data.WsConLock.Unlock()
 
 	defer func() {
-		fmt.Println("defer执行了")
 		data.WsConLock.Lock()
-		delete(data.UserConMap,wsId)
+		delete(data.UserConMap, wsId)
 		var i int32 = 0
-		for i = 0;i < ServerForm.ClientListView.Items().Count();i++ {
+		for i = 0; i < ServerForm.ClientListView.Items().Count(); i++ {
 			fmt.Println(wsId)
-			if strings.Contains(wsId,"|") {
+			if strings.Contains(wsId, "|") {
 				split := strings.Split(wsId, "|")
 				wsId = split[0]
 			}
@@ -77,10 +77,11 @@ func Echo(w http.ResponseWriter, r *http.Request) {
 	}()
 	for {
 		//收到client的消息
+		WSRLock.Lock()
 		_, message, err := WsCon.ReadMessage()
+		WSRLock.Unlock()
 		if err != nil {
-			rlog.Log.Println("read:",err)
-			log.Println("read:", err)
+			log.Info("read:", err)
 			break
 		}
 		responseData := data.ResponseData{}
@@ -91,15 +92,15 @@ func Echo(w http.ResponseWriter, r *http.Request) {
 		//0是需要转发的消息，1是客户端对获取到的备注
 		switch responseData.MessageType {
 		case 0:
-			id := responseData.MessageId
+			messageId := responseData.MessageId
 			data.ChanMapLock.Lock()
-			c := data.ChanMap[id]
+			c := data.ChanMap[messageId]
 			data.ChanMapLock.Unlock()
 			c <- responseData
 		case 1:
 			//body := responseData.Body
 			//if body == "" {
-			//	rlog.Log.Println("接收到的body为空")
+			//	rlog.log.Info("接收到的body为空")
 			//	break
 			//}
 			////body:32位MD5+|+备注
@@ -122,4 +123,3 @@ func Echo(w http.ResponseWriter, r *http.Request) {
 	}
 	return
 }
-

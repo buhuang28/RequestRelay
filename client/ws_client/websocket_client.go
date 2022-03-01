@@ -2,14 +2,15 @@ package ws_client
 
 import (
 	"RequestRelayClient/data"
-	"RequestRelayClient/rlog"
 	"RequestRelayClient/tool"
 	"encoding/json"
 	"fmt"
 	"github.com/gorilla/websocket"
 	"github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 )
 
@@ -17,7 +18,9 @@ var (
 	//wsServerAddr string = "ws://127.0.0.1:8080/echo"
 	LocalServerAddr = "http://127.0.0.1:"
 	WsCon           *websocket.Conn
-	ConSucess       bool = false
+	ConSuccess      bool = false
+	WSRLock         sync.Mutex
+	WSWLock         sync.Mutex
 )
 
 const (
@@ -27,13 +30,10 @@ const (
 
 func WsDailCall() {
 	data.SettingData = data.SettingData
-	fmt.Println(data.SettingData)
 	var err error
 	var header http.Header = make(map[string][]string)
 	header.Add("origin", data.SettingData.ServerAddr)
-
 	if data.SettingData.WsId == "" {
-		fmt.Println("卧槽尼玛：", data.SettingData.WsId)
 		nano := time.Now().UnixNano()
 		wsId := strconv.FormatInt(nano, 10) + uuid.NewV4().String()
 		wsId = tool.Md5(wsId)
@@ -47,13 +47,11 @@ func WsDailCall() {
 	if data.SettingData.Note != "" {
 		wsId += "|" + data.SettingData.Note
 	}
-
 	//请求头这里带上id
 	header.Add("ws_id", wsId)
-
 	//Label:
 	for {
-		if ConSucess {
+		if ConSuccess {
 			break
 		}
 		fmt.Println(data.SettingData.ServerAddr)
@@ -61,10 +59,10 @@ func WsDailCall() {
 		if err != nil || WsCon == nil {
 			fmt.Println(err)
 			ClientForm.WSStatus.SetCaption(FAIL)
-			rlog.Log.Println("dial:", err)
+			log.Info("dial:", err)
 		} else {
 			ClientForm.WSStatus.SetCaption(SUCCESS)
-			ConSucess = true
+			ConSuccess = true
 			go func() {
 				HandleWsMsg()
 			}()
@@ -76,14 +74,19 @@ func WsDailCall() {
 
 func HandleWsMsg() {
 	for {
+		if WsCon == nil || !ConSuccess {
+			time.Sleep(time.Second * 2)
+			continue
+		}
+		WSRLock.Lock()
 		_, message, e := WsCon.ReadMessage()
+		WSRLock.Unlock()
 		fmt.Println("收到消息:", string(message))
 		if e != nil {
-			fmt.Println("出错了")
-			rlog.Log.Println(e)
+			log.Info(e)
 			time.Sleep(time.Second * 2)
 			go func() {
-				ConSucess = false
+				ConSuccess = false
 				fmt.Println("ws-server掉线，正在重连")
 				WsDailCall()
 			}()
@@ -92,13 +95,11 @@ func HandleWsMsg() {
 		var requestData data.RequestData
 		e = json.Unmarshal(message, &requestData)
 		if e != nil {
-			rlog.Log.Println(e)
+			log.Info(e)
 			requestData.Status = -3
-			marshal, _ := json.Marshal(requestData)
-			WsCon.WriteMessage(websocket.TextMessage, marshal)
+			SendRequestMessage(requestData)
 			continue
 		}
-
 		//请求后返回给服务端的数据
 		var responseData data.ResponseData
 
@@ -119,7 +120,22 @@ func HandleWsMsg() {
 		//应该在这里修改GUI
 		responseData.MessageId = requestData.MessageId
 		responseData.Body = string(result)
-		marshal, _ := json.Marshal(responseData)
-		WsCon.WriteMessage(websocket.TextMessage, marshal)
+		SendResponseMessage(responseData)
 	}
+}
+
+func SendResponseMessage(data data.ResponseData) error {
+	WSWLock.Lock()
+	defer WSWLock.Unlock()
+	marshal, _ := json.Marshal(data)
+	err := WsCon.WriteMessage(websocket.TextMessage, marshal)
+	return err
+}
+
+func SendRequestMessage(data data.RequestData) error {
+	WSWLock.Lock()
+	defer WSWLock.Unlock()
+	marshal, _ := json.Marshal(data)
+	err := WsCon.WriteMessage(websocket.TextMessage, marshal)
+	return err
 }

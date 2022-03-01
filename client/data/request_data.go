@@ -1,5 +1,6 @@
 package data
 
+//向ws-server传递数据的结构体
 type RequestData struct {
 	//消息类型id  0:消息传递, 1:给client钦点id
 	MessageType int64 `json:"message_type"`
@@ -16,6 +17,6 @@ type RequestData struct {
 	Path string `json:"path"`
 	//请求头
 	Header map[string]string `json:"header"`
-	//请求体/返回数据  server -> client:get请求为"",post则获取request.body内容    client -> server:返回响应数据
+	//请求体/返回数据  server -> client:get请求为"",post则获取request.body内容(gin.getRaw()其实也可以)    client -> server:返回响应数据
 	Body string `json:"body"`
 }

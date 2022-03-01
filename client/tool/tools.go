@@ -1,11 +1,11 @@
 package tool
 
 import (
-	"RequestRelayClient/rlog"
 	"bytes"
 	"crypto/md5"
 	"encoding/hex"
 	"fmt"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"runtime"
@@ -22,7 +22,7 @@ func CheckFileIsExits(fileName string) bool {
 	return true
 }
 
-func PrintStackTrace(err interface{})  {
+func PrintStackTrace(err interface{}) {
 	buf := new(bytes.Buffer)
 	fmt.Fprintf(buf, "%v\n", err)
 	for i := 1; ; i++ {
@@ -32,7 +32,7 @@ func PrintStackTrace(err interface{})  {
 		}
 		fmt.Fprintf(buf, "%s:%d (0x%x)\n", file, line, pc)
 	}
-	rlog.Log.Println(buf.String())
+	log.Info(buf.String())
 }
 
 func Md5(s string) string {
@@ -42,7 +42,7 @@ func Md5(s string) string {
 }
 
 //复写
-func WriteFile(fileName,content string) bool {
+func WriteFile(fileName, content string) bool {
 	f, err := os.OpenFile(fileName, os.O_WRONLY|os.O_TRUNC|os.O_CREATE, 0777)
 	defer func() {
 		f.Close()
@@ -58,7 +58,6 @@ func WriteFile(fileName,content string) bool {
 	}
 	return false
 }
-
 
 func ReadFile(fileName string) string {
 	exist := CheckFileIsExits(fileName)

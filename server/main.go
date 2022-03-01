@@ -1,14 +1,14 @@
 package main
 
 import (
-	"RequestRelayServer/rlog"
+	"RequestRelayServer/logs"
 	"RequestRelayServer/ws_server"
 	_ "github.com/ying32/govcl/pkgs/winappres"
 	"github.com/ying32/govcl/vcl"
 )
 
-func init()  {
-	rlog.InitLog()
+func init() {
+	logs.InitLog()
 }
 
 func main() {
