@@ -97,7 +97,7 @@ func HandleWsMsg() {
 		if e != nil {
 			log.Info(e)
 			requestData.Status = -3
-			SendRequestMessage(requestData)
+			_ = SendRequestMessage(requestData)
 			continue
 		}
 		//请求后返回给服务端的数据
@@ -120,7 +120,7 @@ func HandleWsMsg() {
 		//应该在这里修改GUI
 		responseData.MessageId = requestData.MessageId
 		responseData.Body = string(result)
-		SendResponseMessage(responseData)
+		_ = SendResponseMessage(responseData)
 	}
 }
 

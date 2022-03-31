@@ -2,8 +2,8 @@ package ws_server
 
 import (
 	"RequestRelayServer/data"
-	"fmt"
 	"github.com/gin-gonic/gin"
+	log "github.com/sirupsen/logrus"
 	"github.com/ying32/govcl/vcl"
 	"io/ioutil"
 	"strconv"
@@ -52,11 +52,13 @@ func (r *RelayController) HandleRequest(c *gin.Context) {
 	}
 	json := ""
 	if method != "GET" {
+		//rawData, getRawError := c.GetRawData()
 		body, err := ioutil.ReadAll(c.Request.Body)
 		if err == nil {
 			json = string(body)
 		}
 	}
+	//body不一定是json，还可能是form表单，method不一定是get,post，还可能是delete、put。客户端没做put、get，目前鸽了。
 	wsData := data.RequestData{MessageId: msgId, Method: method, Path: path, Header: header, Body: json}
 	go func() {
 		vcl.ThreadSync(func() {
@@ -74,7 +76,7 @@ func (r *RelayController) HandleRequest(c *gin.Context) {
 	t := ""
 	select {
 	case wsResult = <-ch:
-		fmt.Println("收到结构体数据")
+		log.Info("收到结构体数据")
 		Resp = wsResult.Body
 		nowTime2 := time.Now().UnixNano() / 1e6
 		useTime := nowTime2 - nowTime
@@ -82,7 +84,7 @@ func (r *RelayController) HandleRequest(c *gin.Context) {
 		wsResult.UseTime = useTime
 		break
 	case <-time.After(time.Second * time.Duration(data.SettingData.OutTime)):
-		fmt.Println("超时打断")
+		log.Info("超时打断")
 		break
 	}
 	go func() {
